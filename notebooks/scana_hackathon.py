@@ -27,7 +27,7 @@
 
 # COMMAND ----------
 
-taxes2013 = spark.read.format("csv").option("header", "true").load("dbfs:/mnt/demo/csv/2013_soi_zipcode_agi.csv").drop("_c0")
+taxes2013 = spark.read.format("csv").option("header", "true").load("dbfs:/databricks-datasets/data.gov/irs_zip_code_data/data-001/2013_soi_zipcode_agi.csv")
 
 
 # COMMAND ----------
