@@ -3,7 +3,417 @@
 
 # COMMAND ----------
 
+# MAGIC %md ### Creating fake data (optional)
+
+# COMMAND ----------
+
+data_case3#fake data generation for case 3
+from faker import Faker
+fake = Faker()
+fake.latitude()
+
+#List of fields from customer
+# ACCOUNT_NO - unique customer account number
+# REVENUE_MONTH_DT - billing revenue month
+# ACCOUNT_TYP_CD - Residential, Commercial, or Industrial.  (Only Residential accounts were used.)
+# ACCOUNT_CREATE_DT - Service start date
+# ACCOUNT_STATUS_CD - Active, Final Billed, Pending, etc
+# PREMISE_NO - unique premise number
+# CUSTOMER_NO - unique customer number
+# ACCOUNT_CREDIT_GRP_CD - Credit Action Exempt, Arrears, Balance, etc
+# ACCOUNT_EPP_IN - Is account currently on Budget Billing (Y/N)
+# LOCAL_OFFICE_NO - geographic account local office
+# UTILITY_GROUP_CD - code indicating electric, gas, and unmetered services at the account
+# ZIP_CD - postal zip code of the premises
+# ELECTRIC_BILLED_KWH_QT - electric kilowatts per hour billed
+# ELECTRIC_BILLED_AM - dollar amount for electric kilowatts billed
+# GAS_BILLED_THERMS_QT - gas therms billed
+# GAS_BILLED_AM - dollar amount for gas therms billed
+# UNMETERED_BILLED_AM - dollar amount for unmetered services
+# TOTAL_BILLED_AM - total dollar amount billed
+import pandas as pd
+import numpy as np
+import random
+from dateutil import parser
+import datetime
+from dateutil.relativedelta import relativedelta
+import datetime
+max_num_range = 100
+#pattern of consumption of eletricity
+ele_pattern = [6,7,6,5,6,7,8,9,8,6,5,6]
+#pattern of consumption of gas
+gas_pattern = [10,10,8,7,6,5,5,6,6,7,8,9]
+
+def bill_gen(total_mean, pattern):
+  month_mean = total_mean/sum(pattern)
+  return [month_mean*(1+np.random.randint(-1,1)/2)*month for month in pattern]
+
+
+def date_gen(year):
+
+  base = parser.parse("jan 01 "+ str(year))
+  date_list = [base + relativedelta(months=x) for x in range(0, 12)]
+  return date_list
+def get_random_cat(list):
+  return list[np.random.randint(0,len(list))]
+
+ACCOUNT_NO_range = range(1, max_num_range)
+REVENUE_MONTH_DT_range = range(2016, 2019)
+ACCOUNT_TYP_CD_range = ['Residential']
+ACCOUNT_STATUS_CD_range = ['Active', 'Final', 'Billed', 'Pending']
+PREMISE_NO_range = range(1,max_num_range)
+CUSTOMER_NO_range= range(1,max_num_range)
+ACCOUNT_CREDIT_GRP_CD_range = ['Exempt', 'Arrears', 'Balance']
+ACCOUNT_EPP_IN_range = ['Y','N']
+LOCAL_OFFICE_NO_range = ['LO001', 'L0002', 'L0003', 'LO0004']
+UTILITY_GROUP_CD_range = ['elec', 'gas']
+# ZIP_CD = fake.zi['elec', 'gas']
+ACCOUNT_NO_list = []
+REVENUE_MONTH_DT_list = []
+ACCOUNT_TYP_CD_list = []
+ACCOUNT_STATUS_CD_list = []
+PREMISE_NO_list = []
+CUSTOMER_NO_list= []
+ACCOUNT_CREDIT_GRP_CD_list = []
+ACCOUNT_EPP_IN_list = []
+LOCAL_OFFICE_NO_list = []
+UTILITY_GROUP_CD_list = []
+
+ZIP_CD_list=[]
+ELECTRIC_BILLED_KWH_QT_list=[]
+GAS_BILLED_THERMS_QT_list =[]
+GAS_BILLED_AM_list =[]
+PREMISE_NO_list=[]
+ELECTRIC_BILLED_AM_list = []
+UNMETERED_BILLED_AM_list = []
+TOTAL_BILLED_AM_list = []
+
+for acc_no in ACCOUNT_NO_range:
+  zipcode=fake.zipcode()
+  ACCOUNT_TYP_CD_val = get_random_cat(ACCOUNT_TYP_CD_range)
+  ACCOUNT_STATUS_CD_val = get_random_cat(ACCOUNT_STATUS_CD_range)
+  ACCOUNT_CREDIT_GRP_CD_val=get_random_cat(ACCOUNT_CREDIT_GRP_CD_range)
+  ACCOUNT_EPP_IN_val = get_random_cat(ACCOUNT_EPP_IN_range)
+  LOCAL_OFFICE_NO_val = get_random_cat(LOCAL_OFFICE_NO_range)
+  UTILITY_GROUP_CD_val = get_random_cat(UTILITY_GROUP_CD_range)
+  for year in REVENUE_MONTH_DT_range:
+    REVENUE_MONTH_DT_list=REVENUE_MONTH_DT_list+ date_gen(year)
+    ELECTRIC_BILLED_KWH_QT_list =ELECTRIC_BILLED_KWH_QT_list+ bill_gen(5000,ele_pattern)
+    ELECTRIC_BILLED_AM_list = ELECTRIC_BILLED_AM_list+bill_gen(600,ele_pattern)
+    GAS_BILLED_AM_list =GAS_BILLED_AM_list+bill_gen(500,gas_pattern)
+
+    GAS_BILLED_THERMS_QT_list =GAS_BILLED_THERMS_QT_list+bill_gen(100,gas_pattern)
+    UNMETERED_BILLED_AM_list =UNMETERED_BILLED_AM_list+bill_gen(59,gas_pattern)
+    TOTAL_BILLED_AM_list= TOTAL_BILLED_AM_list+bill_gen(1200,ele_pattern)
+    
+    for i in range(0,12):
+      ACCOUNT_NO_list.append('a'+format(acc_no,"06"))
+      CUSTOMER_NO_list.append('c'+format(acc_no,"06"))
+      PREMISE_NO_list.append('pr'+format(acc_no,"06"))
+      ZIP_CD_list.append(zipcode)
+      ACCOUNT_TYP_CD_list.append(ACCOUNT_TYP_CD_val)
+      ACCOUNT_STATUS_CD_list.append(ACCOUNT_STATUS_CD_val)
+      ACCOUNT_CREDIT_GRP_CD_list.append(ACCOUNT_CREDIT_GRP_CD_val)
+      ACCOUNT_EPP_IN_list.append(ACCOUNT_EPP_IN_val)
+      LOCAL_OFFICE_NO_list.append(LOCAL_OFFICE_NO_val)
+      UTILITY_GROUP_CD_list.append(UTILITY_GROUP_CD_val)
+      
+data_case3 = {"ACCOUNT_NO": ACCOUNT_NO_list,"CUSTOMER_NO":CUSTOMER_NO_list, "PREMISE_NO":PREMISE_NO_list, "ZIP_CD":ZIP_CD_list, "ACCOUNT_TYP_CD":ACCOUNT_TYP_CD_list, "ACCOUNT_STATUS_CD":ACCOUNT_STATUS_CD_list,"PREMISE_NO":PREMISE_NO_list, "ACCOUNT_CREDIT_GRP_CD":ACCOUNT_CREDIT_GRP_CD_list, "ACCOUNT_EPP_IN":ACCOUNT_EPP_IN_list, "LOCAL_OFFICE_NO":LOCAL_OFFICE_NO_list,"UTILITY_GROUP_CD":UTILITY_GROUP_CD_list, "REVENUE_MONTH_DT":REVENUE_MONTH_DT_list,"ELECTRIC_BILLED_KWH_QT":ELECTRIC_BILLED_KWH_QT_list, "ELECTRIC_BILLED_AM":ELECTRIC_BILLED_AM_list, "GAS_BILLED_AM":GAS_BILLED_AM_list, "GAS_BILLED_THERMS_QT":GAS_BILLED_THERMS_QT_list, "UNMETERED_BILLED_AM":UNMETERED_BILLED_AM_list,"TOTAL_BILLED_AM":TOTAL_BILLED_AM_list }
+df_case3 = pd.DataFrame.from_dict(data_case3)
+
+df_case3=spark.createDataFrame(df_case3)
+df_case3.write.format("delta").mode("overwrite").saveAsTable("data_case3")
+display(spark.sql("select * from data_case3 "))
+
+# COMMAND ----------
+
+#Test data generation for use case 1
+from faker import Faker
+fake = Faker()
+fake.name()
+fake.address()
+fake.text()
+fake.state()
+
+#List of fields for use case 1 from customer
+"""
+ACCOUNT_NO 	- Customer Account #
+CIS_SVC_ORDER_NO - Service Order #
+ORDER_DISTRICT_NM - Service Order District 
+ENGINEER_DISTRICT_NM 	- Technician  District
+LATITUDE_NO 	- Latitude  location for Order #
+LOCAL_OFFICE_NO	 - nearest account local office
+LOCAL_OFFICE_TX 	- nearest account local office
+LONGITUDE_NO 	 - Longitude  location for Order #
+ORDER_APPT_FINISH_TS 	- Appointment finishtime 
+ORDER_APPT_START_TS 	- Appointment start time 
+ORDER_COMPLETED_ON_TIME_FL	- Order Completed on time flag
+ORDER_COMPLIANCE_TS 	- order compliance timestamp
+ORDER_CREATED_DURATION_NO 	- Order created duration
+ORDER_CREATED_HR	- order created hrs
+ORDER_CREATED_TS 	- order created timestamp
+ORDER_PENDING_DURATION_NO 	- How Long order pending 
+ORDER_PENDING_HR 	- Hrs value - How Long order pending 
+ORDER_PENDING_TS	- How Long order pending - timestamp
+ORDER_SCHED_TS 	- order scheduled timestamp
+ORDER_DISPATCH_DURATION_NO 	- order dispatch duration
+ORDER_DISPATCH_HR	- order dispatch duration -hr. value
+ORDER_DISPATCH_TS 	- order dispatch duration -timestamp
+ORDER_TRAVEL_DURATION_NO 	- How long it takes to travel to Order location
+ORDER_TRAVEL_HR 	- hr. value -How long it takes to travel to Order location
+ORDER_TRAVEL_TS	 - How long it takes to travel to Order location -timestamp
+ORDER_ONSITE_DURATION_NO 	
+ORDER_ONSITE_HR 	
+ORDER_ONSITE_TS	
+ORDER_FINAL_STATE_TS 	
+ORDER_FINAL_STATE_DT	
+ORDER_FINAL_STATE_HR 	
+ORDER_DUE_TS 	
+ORDER_PRIORITY_NO 	 - priority
+ORDER_STATUS_NM	 - Status
+ORDER_TYP_CD	- order type code
+ORDER_TYP_NM 	 - Order type ID
+PREMISE_NO 	- Premise no 
+READ_ROUTE_NO 	
+REGION_NM	- Region Number
+UTIL_TYP_NM 	- GAS or Electric
+WORK_TYPE_CD	- Worktype code
+WORK_TYP_NM 	- Worktype ID
+TASK_STD_DURATION_ID	
+ASSIGNED_TO 	- technician name
+APPOINTMENT_IN	
+"""
+
+import pandas as pd
+import random
+from dateutil import parser
+import datetime
+from dateutil.relativedelta import relativedelta
+import datetime
+
+max_num_range = 100
+
+#Numerical
+def bill_gen(total_mean, pattern):
+  month_mean = total_mean/sum(pattern)
+  return [month_mean*(1+np.random.randint(-1,1)/2)*month for month in pattern]
+
+#Date
+def date_gen(year):
+  base = parser.parse("jan 01 "+ str(year))
+  date_list = [base + relativedelta(months=x) for x in range(0, 12)]
+  return date_list
+
+#Categorical 
+def get_random_cat(list):
+  return list[np.random.randint(0,len(list))]
+
+
+ACCOUNT_NO_range = range(1, max_num_range)
+CIS_SVC_ORDER_NO_range = range(1, max_num_range)
+ORDER_DISTRICT_NM_range = range(1, max_num_range)
+ENGINEER_DISTRICT_NM_range = range(1, max_num_range)
+LATITUDE_NO_range = range(1, max_num_range)
+LOCAL_OFFICE_NO_range = ['LO001', 'L0002', 'L0003', 'LO0004']
+LOCAL_OFFICE_TX_range = ['TXO001', 'TX0002', 'L0003', 'TXO0004']
+LONGITUDE_NO_range = range(1, max_num_range)
+
+ORDER_APPT_FINISH_TS_range = range(1, max_num_range)
+ORDER_APPT_START_TS_range = range(1, max_num_range)
+ORDER_COMPLETED_ON_TIME_FL_range = range(1, max_num_range)
+ORDER_COMPLIANCE_TS_range = range(1, max_num_range)
+ORDER_CREATED_DURATION_NO_range = range(1, max_num_range)
+ORDER_CREATED_HR_range = range(1, max_num_range)
+ORDER_CREATED_TS_range = range(1, max_num_range)
+ORDER_PENDING_DURATION_NO_range = range(1, max_num_range)
+ORDER_PENDING_HR_range = range(1, max_num_range)
+ORDER_PENDING_TS_range = range(1, max_num_range)
+ORDER_SCHED_TS_range = range(1, max_num_range)
+
+ORDER_DISPATCH_DURATION_NO_range = [0,1,2,3,4,5]
+ORDER_DISPATCH_HR_range = [0,1,2,3,4,5]
+ORDER_DISPATCH_TS_range = [0,1,2,3,4,5]
+
+ORDER_TRAVEL_DURATION_NO_range = [5,6,7,8,9,10]
+ORDER_TRAVEL_HR_range = [5,6,7,8,9,10]
+ORDER_TRAVEL_TS_range = [5,6,7,8,9,10]
+
+ORDER_ONSITE_DURATION_NO_range = [20,30,40]
+ORDER_ONSITE_HR_range = [20,30,40]
+ORDER_ONSITE_TS_range = [20,30,40]
+
+ORDER_FINAL_STATE_TS_range = ['Ready','Delivered','Dispatched']
+ORDER_FINAL_STATE_DT_range = range(2016, 2019)
+ORDER_FINAL_STATE_HR_range = ['Ready','Delivered','Dispatched']
+ORDER_DUE_TS_range = range(1, max_num_range)
+
+ORDER_PRIORITY_NO_range = ['Low','Medium','High']
+ORDER_STATUS_NM_range = ['Open','In-progress','Closed']
+ORDER_TYP_CD_range = ['Open','In-progress','Closed']
+ORDER_TYP_NM_range = ['Open','In-progress','Closed']
+
+PREMISE_NO_range = range(1, max_num_range)
+READ_ROUTE_NO_range = range(1, max_num_range)
+REGION_NM_range = range(1, max_num_range)
+UTIL_TYP_NM_range = range(1, max_num_range)
+WORK_TYPE_CD_range = range(1, max_num_range)
+WORK_TYP_NM_range = range(1, max_num_range)
+TASK_STD_DURATION_ID_range = range(1, max_num_range)
+ASSIGNED_TO_range = range(1, max_num_range)
+APPOINTMENT_IN_range = range(1, max_num_range)
+
+
+ACCOUNT_NO_list = []
+CIS_SVC_ORDER_NO_list = []
+ORDER_DISTRICT_NM_list = []
+ENGINEER_DISTRICT_NM_list = []
+LATITUDE_NO_list = []
+LOCAL_OFFICE_NO_list = [] 
+LOCAL_OFFICE_TX_list = [] 
+LONGITUDE_NO_list = []
+
+ORDER_APPT_FINISH_TS_list = []
+ORDER_APPT_START_TS_list = []
+ORDER_COMPLETED_ON_TIME_FL_list = []
+ORDER_COMPLIANCE_TS_list = []
+ORDER_CREATED_DURATION_NO_list = []
+ORDER_CREATED_HR_list = []
+ORDER_CREATED_TS_list = []
+ORDER_PENDING_DURATION_NO_list = []
+ORDER_PENDING_HR_list = []
+ORDER_PENDING_TS_list = []
+ORDER_SCHED_TS_list = []
+
+ORDER_DISPATCH_DURATION_NO_list = [] 
+ORDER_DISPATCH_HR_list = [] 
+ORDER_DISPATCH_TS_list = [] 
+
+ORDER_TRAVEL_DURATION_NO_list = [] 
+ORDER_TRAVEL_HR_list = [] 
+ORDER_TRAVEL_TS_list = [] 
+
+ORDER_ONSITE_DURATION_NO_list = [] 
+ORDER_ONSITE_HR_list = [] 
+ORDER_ONSITE_TS_list = [] 
+
+ORDER_FINAL_STATE_TS_list = [] 
+ORDER_FINAL_STATE_DT_list = []
+ORDER_FINAL_STATE_HR_list = [] 
+ORDER_DUE_TS_list = []
+
+ORDER_PRIORITY_NO_list = [] 
+ORDER_STATUS_NM_list = [] 
+ORDER_TYP_CD_list = [] 
+ORDER_TYP_NM_list = [] 
+
+PREMISE_NO_list = []
+READ_ROUTE_NO_list = []
+REGION_NM_list = []
+UTIL_TYP_NM_list = []
+WORK_TYPE_CD_list = []
+WORK_TYP_NM_list = []
+TASK_STD_DURATION_ID_list = []
+ASSIGNED_TO_list = []
+APPOINTMENT_IN_list = []
+
+
+# for loop 
+
+for acc_no in ACCOUNT_NO_range:
+   ACCOUNT_NO_list.append(1)
+  
+
+data_case1 = {
+              "ACCOUNT_NO": ACCOUNT_NO_list,
+              "CIS_SVC_ORDER_NO ":CIS_SVC_ORDER_NO_list, 
+              "ORDER_DISTRICT_NM":ORDER_DISTRICT_NM_list, 
+              "ENGINEER_DISTRICT_NM ":ENGINEER_DISTRICT_NM_list, 
+              "LATITUDE_NO ":LATITUDE_NO_list, 
+              "LOCAL_OFFICE_NO":LOCAL_OFFICE_NO_list,
+              "LOCAL_OFFICE_TX":LOCAL_OFFICE_TX_list, 
+              "LONGITUDE_NO":LONGITUDE_NO_list, 
+              
+              "ORDER_APPT_FINISH_TS":ORDER_APPT_FINISH_TS_list, 
+              "ORDER_APPT_START_TS":ORDER_APPT_START_TS_list,
+              
+              "ORDER_COMPLETED_ON_TIME_FL":ORDER_COMPLETED_ON_TIME_FL_list, 
+              "ORDER_COMPLIANCE_TS":ORDER_COMPLIANCE_TS_list,
+              
+              "ORDER_CREATED_DURATION_NO":ORDER_CREATED_DURATION_NO_list, 
+              "ORDER_CREATED_HR":ORDER_CREATED_HR_list, 
+              "ORDER_CREATED_TS":ORDER_CREATED_TS_list, 
+              
+              "ORDER_PENDING_DURATION_NO":ORDER_PENDING_DURATION_NO_list, 
+              "ORDER_PENDING_HR":ORDER_PENDING_HR_list,
+              "ORDER_PENDING_TS":ORDER_PENDING_TS_list,
+              
+               "ORDER_SCHED_TS": ORDER_SCHED_TS_list ,
+               "ORDER_DISPATCH_DURATION_NO ": ORDER_DISPATCH_DURATION_NO_list,
+               "ORDER_DISPATCH_HR": ORDER_DISPATCH_HR_list,
+               "ORDER_DISPATCH_TS": ORDER_DISPATCH_TS_list,
+               "ORDER_TRAVEL_DURATION_NO": ORDER_TRAVEL_DURATION_NO_list,
+               "ORDER_TRAVEL_HR": ORDER_TRAVEL_HR_list,
+               "ORDER_TRAVEL_TS": ORDER_TRAVEL_TS_list,
+               "ORDER_ONSITE_DURATION_NO": ORDER_ONSITE_DURATION_NO_list,
+               "ORDER_ONSITE_HR": ORDER_ONSITE_HR_list,
+               "ORDER_ONSITE_TS": ORDER_ONSITE_TS_list,
+               "ORDER_FINAL_STATE_TS": ORDER_FINAL_STATE_TS_list,
+                 
+               "ORDER_FINAL_STATE_DT": ORDER_FINAL_STATE_DT_list,
+               "ORDER_FINAL_STATE_HR": ORDER_FINAL_STATE_HR_list,
+               "ORDER_DUE_TS": ORDER_DUE_TS_list,
+               "ORDER_PRIORITY_NO": ORDER_PRIORITY_NO_list,
+               "ORDER_STATUS_NM": ORDER_STATUS_NM_list,
+               "ORDER_TYP_CD": ORDER_TYP_CD_list,
+               "ORDER_TYP_NM": ORDER_TYP_NM_list,
+  
+               "PREMISE_NO": PREMISE_NO_list,
+               "READ_ROUTE_NO": READ_ROUTE_NO_list,
+               "REGION_NM": REGION_NM_list,
+  
+               "UTIL_TYP_NM ": UTIL_TYP_NM_list,
+               "WORK_TYPE_CD": WORK_TYPE_CD_list,
+               "WORK_TYP_NM": WORK_TYP_NM_list,
+               "TASK_STD_DURATION_ID": TASK_STD_DURATION_ID_list,
+               "ASSIGNED_TO": ASSIGNED_TO_list,
+               "APPOINTMENT_IN": APPOINTMENT_IN_list
+             }
+
+df_case1 = pd.DataFrame.from_dict(data_case1)
+df_case1=spark.createDataFrame(df_case1)
+display(df_case1)
+
+
+
+# COMMAND ----------
+
+ele_pattern = [10,10,8,7,6,5,5,6,6,7,8,9]
+
+def bill_gen(total_mean, pattern):
+  month_mean = total_mean/sum(pattern)
+  return [month_mean*(1+np.random.randint(-1,1)/2)*month for month in pattern]
+bill_gen(500, ele_pattern)
+from dateutil import parser
+import datetime
+from dateutil.relativedelta import relativedelta
+import datetime
+
+
+def date_gen(year):
+
+  base = parser.parse("jan 01 "+ str(year))
+  date_list = [base + relativedelta(months=x) for x in range(0, 12)]
+  return date_list
+date_gen(2014)
+np.random.randint
+
+# COMMAND ----------
+
 # MAGIC %md ## Setup data access and loading data
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
@@ -88,6 +498,55 @@ display(taxes2013_l.withColumn("forecast_temp", get_temp_forecast_udf("zipcode")
 
 # COMMAND ----------
 
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.feature import IndexToString, StringIndexer, VectorIndexer
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.regression import LinearRegressionSummary
+
+from pyspark.ml.feature import VectorIndexer
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.feature import IndexToString, StringIndexer, VectorIndexer
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import OneHotEncoderEstimator
+
+from pyspark.sql.functions import when
+amazon_req_ds =spark.sql("select (case when (bytes_sent <= 1000000) and (request_time-_tcwait/1000)<4 then 1 else (case when bytes_sent > 1000000 and ((8*bytes_sent)/(1000000*(request_time-_tcwait/1000)))>2 then 1 else 0 end) end) good_count, coserver_id, cast (raw_asn as string) as asn, mbps, counter, player_speed, cast(status_code as string) as status_code, request_time, msec, distr_id,_tcpinfo_rtt, cache_status, cc, state, distr_id_geo,upstream_addr, cast (substr(upstream_response_time, 4) as float) as upstream_response_time, upstream_status, cast (substr(upstream_header_time, 4) as float) as upstream_header_time   from amazon_http_req").na.drop()
+
+amazon_req_ds.registerTempTable("amazon_req_ds")
+amazon_req_added =spark.sql("select (case when good_count =1 then 0.004030776357765261 else 1- 0.004030776357765261 end) as class_weight, * from amazon_req_ds")
+
+trainingData, testData = amazon_req_added.randomSplit([0.8,0.2])
+
+# non_na_dataset = trainingData.filter(trainingData.fail_qty !=0)
+# for i in range(1,2):
+#   non_na_dataset_samples = non_na_dataset.sample(True, 0.9)
+#   trainingData = trainingData.union(non_na_dataset_samples)
+
+  # labelIndexer = StringIndexer(inputCol="REPLACE_PN", outputCol="part").fit(dataset) 
+ccIndexer = StringIndexer(inputCol="cc", outputCol="cc_n").fit(amazon_req_ds)
+stateIndexer = StringIndexer(inputCol="state", outputCol="state_n").fit(amazon_req_ds)
+asnIndexer = StringIndexer(inputCol="asn", outputCol="asn_n").fit(amazon_req_ds)
+status_codeIndexer = StringIndexer(inputCol="status_code", outputCol="status_code_n").fit(amazon_req_ds)
+cache_statusIndexer = StringIndexer(inputCol="cache_status", outputCol="cache_status_n").fit(amazon_req_ds)
+distr_id_geoIndexer = StringIndexer(inputCol="distr_id_geo", outputCol="distr_id_geo_n").fit(amazon_req_ds)
+distr_id_Indexer = StringIndexer(inputCol="distr_id", outputCol="distr_id_n").fit(amazon_req_ds)
+# upstream_statusIndexer = StringIndexer(inputCol="upstream_status", outputCol="upstream_status_n").fit(amazon_req_ds)
+
+
+# encoder = OneHotEncoderEstimator(inputCols=["cc_n", "state_n","asn_n", "status_code_n", "cache_status_n","distr_id_geo_n","distr_id_n", "upstream_status_n"],
+#                                  outputCols=["cc_vec", "state_vec","asn_vec", "status_code_vec", "cache_status_vec","distr_id_geo_vec","distr_id_vec", "upstream_status_vec" ])
+encoder = OneHotEncoderEstimator(inputCols=["cc_n", "state_n","asn_n", "status_code_n", "cache_status_n","distr_id_geo_n","distr_id_n"],
+                                 outputCols=["cc_vec", "state_vec","asn_vec", "status_code_vec", "cache_status_vec","distr_id_geo_vec","distr_id_vec"])
+
+
+  
+assembler = VectorAssembler(
+  inputCols=["cc_vec", "state_vec","asn_vec","status_code_vec", "cache_status_vec","distr_id_geo_vec","distr_id_vec",  "mbps", "counter", "player_speed", "request_time", "msec", "_tcpinfo_rtt"],
+  outputCol="features")
 
 
 # COMMAND ----------
@@ -96,7 +555,83 @@ display(taxes2013_l.withColumn("forecast_temp", get_temp_forecast_udf("zipcode")
 
 # COMMAND ----------
 
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml import Pipeline
+from pyspark.ml.regression import RandomForestRegressor
+from pyspark.ml.regression import GBTRegressor
 
+from pyspark.ml.feature import VectorIndexer
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.feature import IndexToString, StringIndexer, VectorIndexer
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import OneHotEncoderEstimator
+
+from pyspark.sql.functions import when
+mldataset = spark.sql("select COUNTRY, PartNumber, bround(Age) as Age_round, sum(ShipQuantity) as Ship_Qty, sum(cast(fail_qty as float)) Fail_Qty from one_part_dataset_1 where COUNTRY <>'' and PartNumber <>'' group by COUNTRY, PartNumber, Age_round ")
+
+trainingData, testData = mldataset.randomSplit([0.8,0.2])
+
+# non_na_dataset = trainingData.filter(trainingData.fail_qty !=0)
+# for i in range(1,2):
+#   non_na_dataset_samples = non_na_dataset.sample(True, 0.9)
+#   trainingData = trainingData.union(non_na_dataset_samples)
+
+  # labelIndexer = StringIndexer(inputCol="REPLACE_PN", outputCol="part").fit(dataset) 
+countryIndexer = StringIndexer(inputCol="COUNTRY", outputCol="cn").fit(mldataset)
+productIndexer = StringIndexer(inputCol="PartNumber", outputCol="product").fit(mldataset)
+
+encoder = OneHotEncoderEstimator(inputCols=["cn", "product","Age_round"],
+                                 outputCols=["countryVec", "productVec","ageVec"])
+
+assembler = VectorAssembler(
+  inputCols=["ageVec","Ship_Qty","countryVec","productVec"],
+  outputCol="features")
+
+
+
+
+
+
+  # featureIndexer =VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(dataset4)
+  # Split the data into training and test sets (30% held out for testing)
+  # Train a RandomForest model.
+rf =RandomForestRegressor(labelCol="Fail_Qty", featuresCol="features")
+
+# Convert indexed labels back to original labels.
+# labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel",
+#                                labels=labelIndexer.labels)
+
+# Chain indexers and forest in a Pipeline
+rf_pipeline = Pipeline(stages=[countryIndexer,productIndexer,encoder, assembler, rf])
+
+# Train model.  This also runs the indexers.
+rf_model = rf_pipeline.fit(trainingData)
+
+# Make predictions.
+rf_predictions = rf_model.transform(testData)
+
+rf_predictions.select("prediction", "Fail_Qty", "features").show(50)
+
+# Select (prediction, true label) and compute test error
+evaluator = RegressionEvaluator(
+    labelCol="Fail_Qty", predictionCol="prediction", metricName="rmse")
+rmse = evaluator.evaluate(rf_predictions)
+print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+
+rfModel = rf_model.stages[1]
+print(rfModel)  # summary only
+
+
+
+# # Select (prediction, true label) and compute test error
+# evaluator = MulticlassClassificationEvaluator(
+#     labelCol="fail_qty", predictionCol="prediction", metricName="weightedRecall")
+# rf_accuracy = evaluator.evaluate(rf_predictions)
+# print("Test Error = %g" % (1.0 - rf_accuracy))
+
+# rfModel = rf_model.stages[2]
+# print(rfModel)  # summary only
 
 # COMMAND ----------
 
@@ -105,6 +640,54 @@ display(taxes2013_l.withColumn("forecast_temp", get_temp_forecast_udf("zipcode")
 # COMMAND ----------
 
 
+
+
+
+
+
+  # featureIndexer =VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(dataset4)
+  # Split the data into training and test sets (30% held out for testing)
+  # Train a RandomForest model
+lr = LogisticRegression(maxIter=300, regParam=0.3, elasticNetParam=0.8,weightCol="class_weight",labelCol="good_count",)
+  
+  
+# rf =RandomForestClassifier(labelCol="good_count", featuresCol="features", numTrees= 30)
+
+# Convert indexed labels back to original labels.
+# labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel",
+#                                labels=labelIndexer.labels)
+
+# Chain indexers and forest in a Pipeline
+lr_pipeline = Pipeline(stages=[ccIndexer,stateIndexer,asnIndexer,status_codeIndexer,cache_statusIndexer,distr_id_geoIndexer,distr_id_Indexer,encoder, assembler, lr])
+
+# Train model.  This also runs the indexers.
+lr_model = lr_pipeline.fit(trainingData)
+
+# Make predictions.
+lr_predictions = lr_pipeline.transform(testData)
+
+# rf_predictions.select("prediction", "Fail_Qty", "features").show(50)
+
+# Select (prediction, true label) and compute test error
+evaluator = MulticlassClassificationEvaluator(
+    labelCol="good_count", predictionCol="prediction", metricName="accuracy")
+accuracy = evaluator.evaluate(lr_predictions)
+print("Test Error = %g" % (1.0 - accuracy))
+
+lrModel = lr_model.stages[-1]
+print(lrModel)  # summary only
+
+
+
+
+# # Select (prediction, true label) and compute test error
+# evaluator = MulticlassClassificationEvaluator(
+#     labelCol="fail_qty", predictionCol="prediction", metricName="weightedRecall")
+# rf_accuracy = evaluator.evaluate(rf_predictions)
+# print("Test Error = %g" % (1.0 - rf_accuracy))
+
+# rfModel = rf_model.stages[2]
+# print(rfModel)  # summary only
 
 # COMMAND ----------
 
@@ -116,65 +699,219 @@ display(taxes2013_l.withColumn("forecast_temp", get_temp_forecast_udf("zipcode")
 
 # COMMAND ----------
 
-
 import pandas as pd
-## One-hot encode 'state'
-states =['AK',
-       'AL', 'AR', 'AZ', 'CA', 'CO', 'CT',
-       'DC', 'DE', 'FL', 'GA', 'HI', 'IA',
-       'ID', 'IL', 'IN', 'KS', 'KY', 'LA',
-       'MA', 'MD', 'ME', 'MI', 'MN', 'MO',
-       'MS', 'MT', 'NC', 'ND', 'NE', 'NH',
-       'NJ', 'NM', 'NV', 'NY', 'OH', 'OK',
-       'OR', 'PA', 'RI', 'SC', 'SD', 'TN',
-       'TX', 'UT', 'VA', 'VT', 'WA', 'WI',
-       'WV', 'WY', 'aol', 'unknown']
+import numpy as np
+from random import shuffle
+output_seq_len =12
+input_seq_len =12
+
+class TS_Dataset:
+  columns=None
+  def __init__(self,spark_df, batch_size, entity_field,cat_fields, input_fields, output_fields, input_seq_len,output_seq_len, standardized):
+    self.input_seq =[] 
+    self.output_seq =[]
+    self.entity_counter=0
+    self.spark_df = spark_df
+    self.batch_size = batch_size
+    self.entity_field = entity_field
+    self.cat_fields=cat_fields
+    self.input_fields= input_fields
+    self.output_fields=output_fields
+    self.input_seq_len = input_seq_len
+    self.output_seq_len=output_seq_len
+    self.standardized =standardized
+    self.pd_df =  spark_df.toPandas()
+    self.pd_df_inputs, self.pd_df_outputs,self.std, self.mean, columns = self.encode_ts_data(self.pd_df,self.columns, cat_fields, input_fields, output_fields, standardized)
+    if TS_Dataset.columns is None:
+        TS_Dataset.columns = columns
+    self.batching_data()
+  def add_missing_dummy_columns( self,d, columns ):
+    missing_cols = set( columns ) - set( d.columns )
+    for c in missing_cols:
+        d[c] = 0
+  def fix_columns( self, d, columns ):  
+
+      self.add_missing_dummy_columns( d, columns )
+
+      # make sure we have all the columns we need
+      assert( set( columns ) - set( d.columns ) == set())
+
+      extra_cols = set( d.columns ) - set( columns )
+      if extra_cols:
+          print("extra columns:", extra_cols)
+
+      d = d[ columns ]
+      return d
+  def encode_ts_data(self, df,columns, cat_fields, input_fields, output_fields, standardized=True):
+
+    for cat_field in cat_fields:
+      temp = pd.get_dummies(self.pd_df[cat_field], prefix=cat_field)
+      self.pd_df = pd.concat([self.pd_df, temp], axis = 1)
+      del  temp
+    if columns is not None:
+      self.fix_columns(self.pd_df,columns)
+    pd_df_inputs = self.pd_df[input_fields].values.copy()
+    pd_df_outputs = self.pd_df[output_fields].values.copy()
+    std=[]
+    mean=[]
+    encoded_input_fields = ["encoded_"+field for field in input_fields]
+    encoded_output_fields = ["encoded_"+field for field in output_fields]
+    if standardized:
+      for i,label in zip(range(pd_df_inputs.shape[1]),encoded_input_fields) :
+        temp_mean = pd_df_inputs[:, i].mean()
+        temp_std = pd_df_inputs[:, i].std()
+        pd_df_inputs[:, i] = (pd_df_inputs[:, i] - temp_mean) / temp_std
+        self.pd_df[label]= pd_df_inputs[:, i]
+      for i,label in zip(range(pd_df_outputs.shape[1]),encoded_output_fields) :
+        temp_mean = pd_df_outputs[:, i].mean()
+        temp_std = pd_df_outputs[:, i].std()
+        std.append(temp_std)
+        mean.append(temp_mean)
+        pd_df_outputs[:, i] = (pd_df_outputs[:, i] - temp_mean) / temp_std
+        self.pd_df[label]= pd_df_outputs[:, i]
 
 
-local_df_train_pv['state']= local_df_train_pv['state'].astype('category',categories=states)
-temp = pd.get_dummies(local_df_train_pv['state'], prefix='state')
-local_df_train_pv = pd.concat([local_df_train_pv, temp], axis = 1)
-del local_df_train_pv['state'], temp
+    return pd_df_inputs, pd_df_outputs,std, mean, self.pd_df.columns
+  
+  def batching_data(self):
+    
+    entity_list = np.unique(self.pd_df[self.entity_field])
+    encoded_input_fields = ["encoded_"+field for field in self.input_fields]
+    encoded_output_fields = ["encoded_"+field for field in self.output_fields]
+    for entity in entity_list:
+      entity_df = self.pd_df[self.pd_df[self.entity_field] == entity]
+      x =entity_df[encoded_input_fields].values
+      y =entity_df[encoded_output_fields].values
+      start_point = len(entity_df) - self.input_seq_len - self.output_seq_len
 
-local_df_test_pv['state']= local_df_test_pv['state'].astype('category',categories=states)
-temp = pd.get_dummies(local_df_test_pv['state'], prefix='state')
-local_df_test_pv = pd.concat([local_df_test_pv, temp], axis = 1)
-del local_df_test_pv['state'], temp
+      start_x_idx = range(start_point)
+      input_batch_idxs = [list(range(i, i+self.input_seq_len)) for i in start_x_idx]
+      output_batch_idxs = [list(range(i+self.input_seq_len, i+self.input_seq_len+self.output_seq_len)) for i in start_x_idx]
+      for input_batch_id in input_batch_idxs:
+        self.input_seq.append(np.take(x,input_batch_id, axis = 0))
+      for output_batch_id in output_batch_idxs:
+        self.output_seq.append(np.take(y,output_batch_id, axis = 0))
+    zip_list = list(zip(self.output_seq, self.input_seq))
+    shuffle(zip_list)
+    self.output_seq, self.input_seq = zip(*zip_list)
+    self.output_seq = np.array(self.output_seq)
+    self.input_seq = np.array(self.input_seq)
+  
+  def next_batch(self):
+    
+    if self.entity_counter== len(self.input_seq):
+      #last entity reach, continue checking for entity counter
+      
+      raise ValueError("End of data reached at:",len(self.input_seq))
+    
+    if self.entity_counter+self.batch_size <=len(self.input_seq):
+      self.entity_counter=self.entity_counter+self.batch_size
+      return self.input_seq[self.entity_counter:self.entity_counter+self.batch_size],self.output_seq[self.entity_counter:self.entity_counter+self.batch_size]   
+    else:
+      self.entity_counter = len(self.input_seq)
+      return self.input_seq[self.entity_counter:],self.output_seq[self.entity_counter:]      
 
-hours = list(range(0,24))
+    
+  def one_shot_prediction(self):
+    
+    entity_list = np.unique(self.pd_df[self.entity_field])
+    encoded_input_fields = ["encoded_"+field for field in self.input_fields]
+    encoded_output_fields = ["encoded_"+field for field in self.output_fields]
+    input_seq =[]
+    output_seq = []
+    output_df=[]
+    for entity in entity_list:
+      entity_df = self.pd_df[self.pd_df[self.entity_field] == entity]
+      x =entity_df[encoded_input_fields].values
+      y =entity_df[encoded_output_fields].values
+      start_point = len(entity_df) - self.input_seq_len - self.output_seq_len
+      print(start_point)
+      start_x_idx = range(start_point)
+      input_batch_idxs = [list(range(i, i+self.input_seq_len)) for i in start_x_idx]
+      output_batch_idxs = [list(range(i+self.input_seq_len, i+self.input_seq_len+self.output_seq_len)) for i in start_x_idx]
+      for input_batch_id in input_batch_idxs:
+        input_seq.append(np.take(x,input_batch_id, axis = 0))
+      for output_batch_id in output_batch_idxs:
+        output_seq.append(np.take(y,output_batch_id, axis = 0))
+      output_df.append(entity_df[start_point:])
+    init_df = output_df[0]
+    for i in range(1,len(output_df)):
+      init_df =init_df.append(output_df[i],ignore_index=True)
 
-local_df_test_pv['hour']= local_df_test_pv['hour'].astype('category',categories=hours)
-temp = pd.get_dummies(local_df_test_pv['hour'])
-local_df_test_pv = pd.concat([local_df_test_pv, temp], axis = 1)
-del local_df_test_pv['hour'], temp
+    return np.array(input_seq), np.array(output_seq), init_df
 
-
-X_train = df_train.loc[:,['aiv_num_rebuffers', 'total_count', 'avg_mbps','hour']].values.copy()
-X_test = df_test.loc[:,['aiv_num_rebuffers', 'total_count', 'avg_mbps','hour']].values.copy()
-y_train = df_train[['total_count','aiv_num_rebuffers','avg_mbps']].values.copy()
-y_test = df_test[['total_count','aiv_num_rebuffers','avg_mbps']].values.copy()
-# y_train = df_train[['total_count']].values.copy()
-# y_test = df_test[['total_count']].values.copy()
  
-## z-score transform x - not including those one-hot columns!
-for i in range(X_train.shape[1]):
-    temp_mean = X_train[:, i].mean()
-    temp_std = X_train[:, i].std()
-    X_train[:, i] = (X_train[:, i] - temp_mean) / temp_std
-    X_test[:, i] = (X_test[:, i] - temp_mean) / temp_std
- 
-## z-score transform y
-y_mean = y_train.mean(axis =0)
-y_std = y_train.std(axis =0)
-y_train = (y_train - y_mean) / y_std
-y_test = (y_test - y_mean) / y_std
+
+cat_fields = ['ACCOUNT_STATUS_CD','ACCOUNT_CREDIT_GRP_CD','ACCOUNT_EPP_IN','LOCAL_OFFICE_NO','UTILITY_GROUP_CD','ZIP_CD']
+input_fields = ['ELECTRIC_BILLED_AM','ELECTRIC_BILLED_KWH_QT', 'GAS_BILLED_THERMS_QT','GAS_BILLED_AM','UNMETERED_BILLED_AM','TOTAL_BILLED_AM']
+output_fields  = ['ELECTRIC_BILLED_AM','ELECTRIC_BILLED_KWH_QT', 'GAS_BILLED_THERMS_QT','GAS_BILLED_AM','UNMETERED_BILLED_AM','TOTAL_BILLED_AM']
+df_case3 =spark.sql("select * from data_case3 order by ACCOUNT_NO, REVENUE_MONTH_DT ")
+df_case3_train =spark.sql("select * from data_case3 where  ACCOUNT_NO !='a000001' or ACCOUNT_NO !='a000002' and ACCOUNT_NO !='a000003' or ACCOUNT_NO !='a000004' or ACCOUNT_NO !='a000005' or ACCOUNT_NO !='a000006'   order by ACCOUNT_NO, REVENUE_MONTH_DT")
+df_case3_val =spark.sql("select * from data_case3 where  ACCOUNT_NO ='a000003' or ACCOUNT_NO ='a000004' or ACCOUNT_NO ='a000005' or ACCOUNT_NO ='a000006'   order by ACCOUNT_NO, REVENUE_MONTH_DT")
+
+
+df_case3_test = spark.sql("select * from data_case3 where  ACCOUNT_NO ='a000001' or ACCOUNT_NO ='a000002' order by ACCOUNT_NO, REVENUE_MONTH_DT")
+ts_dataset=TS_Dataset(df_case3, 30, 'ACCOUNT_NO',cat_fields, input_fields, output_fields, 12,12, True)
+ts_dataset_train = TS_Dataset(df_case3_train, 30, 'ACCOUNT_NO',cat_fields, input_fields, output_fields, 12,12, True)
+ts_dataset_val = TS_Dataset(df_case3_val, 60, 'ACCOUNT_NO',cat_fields, input_fields, output_fields, 12,12, True)
+ts_dataset_test =TS_Dataset(df_case3_test, 60, 'ACCOUNT_NO',cat_fields, input_fields, output_fields, 12,12, True)
+
 
 # COMMAND ----------
 
-input_seq_len = 60
-output_seq_len = 10
+#function to encode timeseries spark dataframe into dataset ready to be consumed by timeseries model. 
+
 import numpy as np 
-def generate_train_samples(x = X_train, y = y_train, batch_size = 10, input_seq_len = input_seq_len, output_seq_len = output_seq_len):
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+input_seq_len = 24
+output_seq_len = 12
+def add_missing_dummy_columns( d, columns ):
+    missing_cols = set( columns ) - set( d.columns )
+    for c in missing_cols:
+        d[c] = 0
+def fix_columns( d, columns ):  
+
+    add_missing_dummy_columns( d, columns )
+
+    # make sure we have all the columns we need
+    assert( set( columns ) - set( d.columns ) == set())
+
+    extra_cols = set( d.columns ) - set( columns )
+    if extra_cols:
+        print("extra columns:", extra_cols)
+
+    d = d[ columns ]
+    return d
+def encode_ts_data(sparkdf,columns, cat_fields, input_fields, output_fields, standardized=True):
+  pd_df =  sparkdf.toPandas()
+
+  for cat_field in cat_fields:
+    temp = pd.get_dummies(pd_df[cat_field], prefix=cat_field)
+    pd_df = pd.concat([pd_df, temp], axis = 1)
+    del pd_df[cat_field], temp
+  if columns is not None:
+    fix_columns(pd_df,columns)
+  pd_df_inputs = pd_df[input_fields].values.copy()
+  pd_df_outputs = pd_df[output_fields].values.copy()
+  std=[]
+  mean=[]
+  if standardized:
+    for i in range(pd_df_inputs.shape[1]):
+      temp_mean = pd_df_inputs[:, i].mean()
+      temp_std = pd_df_inputs[:, i].std()
+      pd_df_inputs[:, i] = (pd_df_inputs[:, i] - temp_mean) / temp_std
+    for i in range(pd_df_outputs.shape[1]):
+      temp_mean = pd_df_outputs[:, i].mean()
+      temp_std = pd_df_outputs[:, i].std()
+      std.append(temp_std)
+      mean.append(temp_mean)
+      pd_df_outputs[:, i] = (pd_df_outputs[:, i] - temp_mean) / temp_std
+  return pd_df_inputs, pd_df_outputs,std, mean, pd_df.columns
+
+
+def generate_train_samples(x, y, batch_size = 10, input_seq_len = input_seq_len, output_seq_len = output_seq_len):
  
     total_start_points = len(x) - input_seq_len - output_seq_len
     start_x_idx = np.random.choice(range(total_start_points), batch_size, replace = False)
@@ -187,9 +924,9 @@ def generate_train_samples(x = X_train, y = y_train, batch_size = 10, input_seq_
  
     return input_seq, output_seq # in shape: (batch_size, time_steps, feature_dim)
  
-def generate_test_samples(x = X_test, y = y_test, input_seq_len = input_seq_len, output_seq_len = output_seq_len):
+def generate_test_samples(x, y, input_seq_len = input_seq_len, output_seq_len = output_seq_len):
  
-    total_samples = x.shape[0]
+    total_samples = x.shape[0]+1
  
     input_batch_idxs = [list(range(i, i+input_seq_len)) for i in range((total_samples-input_seq_len-output_seq_len))]
     input_seq = np.take(x, input_batch_idxs, axis = 0)
@@ -198,6 +935,13 @@ def generate_test_samples(x = X_test, y = y_test, input_seq_len = input_seq_len,
     output_seq = np.take(y, output_batch_idxs, axis = 0)
  
     return input_seq, output_seq
+
+#####
+
+
+
+    
+
 
 # COMMAND ----------
 
@@ -224,9 +968,9 @@ output_seq_len = output_seq_len
 # size of LSTM Cell
 hidden_dim = 96 
 # num of input signals
-input_dim = X_train.shape[1]
+input_dim = len(input_fields)
 # num of output signals
-output_dim = y_train.shape[1]
+output_dim = len(output_fields)
 # num of stacked lstm layers 
 num_stacked_layers = 2
 # gradient clipping - to avoid gradient exploding
@@ -426,17 +1170,17 @@ def build_graph(feed_previous = False):
 
 # COMMAND ----------
 
-total_iteractions = 3001
+total_iteractions = 2000
 batch_size = 40
 KEEP_RATE = 0.5
 train_losses = []
 val_losses = []
 check_point = 500
-# x = np.linspace(0, 40, 130)
-# train_data_x = x[:110]
+
 
 rnn_model = build_graph(feed_previous=False)
 
+val_x, val_y,_ = ts_dataset_val.one_shot_prediction()
 
 init = tf.global_variables_initializer()
 best_mse=0
@@ -448,38 +1192,35 @@ with tf.Session() as sess:
 
     print("Training losses: ")
     for i in range(total_iteractions):
-        batch_input, batch_output = generate_train_samples(batch_size=batch_size)
+        try:
+          batch_input, batch_output = ts_dataset_train.next_batch()
+        except:
+          ts_dataset_train = TS_Dataset(df_case3_train, 30, 'ACCOUNT_NO',cat_fields, input_fields, output_fields, 12,12, True)
+          batch_input, batch_output = ts_dataset_train.next_batch()
+          
         
         feed_dict = {rnn_model['enc_inp'][t]: batch_input[:,t] for t in range(input_seq_len)}
         feed_dict.update({rnn_model['target_seq'][t]: batch_output[:,t] for t in range(output_seq_len)})
         _, loss_t = sess.run([rnn_model['train_op'], rnn_model['loss']], feed_dict)
-#         if best_mse==0:
-  
-#           feed_dict_pred = {rnn_model['enc_inp'][t]: test_x[:, t, :] for t in range(input_seq_len)} # batch prediction
-#           feed_dict_pred.update({rnn_model['target_seq'][t]: np.zeros([test_x.shape[0], output_dim], dtype=np.float32) for t in range(output_seq_len)})
-#           final_preds = sess.run(rnn_model['reshaped_outputs_pred'], feed_dict_pred)
-#           final_preds = [np.expand_dims(pred, 1) for pred in final_preds]
-#           final_preds = np.concatenate(final_preds, axis = 1)
-#           best_mse = np.mean((final_preds - test_y)**2)
-#           print("get initial mse: {}".format(best_mse))
+
         if i%100==0:
           print("Step {}, loss {}".format(i,loss_t))
-        if i%check_point ==0:
+        if i%check_point ==0 and i>0:
           
           temp_saver = rnn_model['saver']()
-          save_path = temp_saver.save(sess, os.path.join('./', 'total_bytes_forecast'))
-          feed_dict = {rnn_model['enc_inp'][t]: test_x[:, t, :] for t in range(input_seq_len)} # batch prediction
-          feed_dict.update({rnn_model['target_seq'][t]: np.zeros([test_x.shape[0], output_dim], dtype=np.float32) for t in range(output_seq_len)})
+          save_path = temp_saver.save(sess, os.path.join('./', 'case3_forecast'))
+          feed_dict = {rnn_model['enc_inp'][t]: val_x[:, t, :] for t in range(input_seq_len)} # batch prediction
+          feed_dict.update({rnn_model['target_seq'][t]: np.zeros([val_x.shape[0], output_dim], dtype=np.float32) for t in range(output_seq_len)})
           final_preds = sess.run(rnn_model['reshaped_outputs_pred'], feed_dict)
           final_preds = [np.expand_dims(pred, 1) for pred in final_preds]
           final_preds = np.concatenate(final_preds, axis = 1)
-          test_mse = np.mean((final_preds - test_y)**2)
+          test_mse = np.mean((final_preds - val_y)**2)
                              
           if (best_mse==0) or (test_mse<best_mse):
              print("Found best model at {} with MSE {}".format(i,test_mse))
              best_mse= test_mse
              temp_saver = rnn_model['saver']()
-             save_path = temp_saver.save(sess, os.path.join('./', 'best_model/total_bytes_forecast'))
+             save_path = temp_saver.save(sess, os.path.join('./', 'best_model/case3_forecast'))
              print("Best Model saved at: ", save_path)
     
            
@@ -487,24 +1228,57 @@ with tf.Session() as sess:
 
 # COMMAND ----------
 
-# MAGIC %md ### Visualizing result
+# MAGIC %md ### Visualizing result for 12 months prediction
 
 # COMMAND ----------
 
-## Display forecast for dimension 0 (total_count)
-test_y_expand = np.concatenate([test_y[:,:,0][i].reshape(-1) for i in range(0, test_y.shape[0], output_seq_len)], axis = 0)
-test_y_expand = [item*y_std[0] + y_mean[0] for item in test_y_expand]
-final_preds_expand = np.concatenate([final_preds[:,:,0][i].reshape(-1) for i in range(0, final_preds.shape[0], output_seq_len)], axis = 0)
-final_preds_expand = [item*y_std[0] + y_mean[0] for item in final_preds_expand]
-import matplotlib.pyplot as plt
-plt.clf()
-plt.plot(final_preds_expand[:200], color = 'orange', label = 'predicted')
-plt.plot(test_y_expand[:200], color = 'blue', label = 'actual')
-plt.title("test data - ")
-plt.legend(loc="upper left")
+rnn_model = build_graph()
+test_x, test_y, output_df = ts_dataset_test.one_shot_prediction()
+y_test_std = ts_dataset_test.std
+y_test_mean = ts_dataset_test.mean
 
-plt.show()
-display()
+init = tf.global_variables_initializer()
+with tf.Session() as sess:
+
+    sess.run(init)
+    
+    saver = rnn_model['saver']().restore(sess,  os.path.join('./', 'best_model/case3_forecast'))
+    
+    feed_dict = {rnn_model['enc_inp'][t]: test_x[:, t, :] for t in range(input_seq_len)} # batch prediction
+    feed_dict.update({rnn_model['target_seq'][t]: np.zeros([test_x.shape[0], output_dim], dtype=np.float32) for t in range(output_seq_len)})
+    final_preds = sess.run(rnn_model['reshaped_outputs_pred'], feed_dict)
+    final_preds = [np.expand_dims(pred, 1) for pred in final_preds]
+    final_preds = np.concatenate(final_preds, axis = 1)
+    test_mse = np.mean((final_preds - test_y)**2)
+    print("Test mse is: ", test_mse)
+
+
+for dim, field_name in enumerate(output_fields):
+  
+  
+## Display forecast for dimension 0 (total_count)
+#   test_y_expand = np.concatenate([test_y[:,:,dim][i].reshape(-1) for i in range(0, test_y.shape[0], output_seq_len)], axis = 0)
+#   test_y_expand = [item*y_test_std[0] + y_test_mean[dim] for item in test_y_expand]
+  final_preds_expand = np.concatenate([final_preds[:,:,dim][i].reshape(-1) for i in [0,11,12,23]], axis = 0)
+  final_preds_expand = [item*y_test_std[dim] + y_test_mean[dim] for item in final_preds_expand]
+
+  output_df[field_name+"_predicted"] = final_preds_expand
+output_df_spark = spark.createDataFrame(output_df)
+display(output_df_spark)
+# # ## Display forecast for dimension 0 (total_count)
+# # test_y_expand = np.concatenate([test_y[:,:,0][i].reshape(-1) for i in range(0, test_y.shape[0], output_seq_len)], axis = 0)
+# # test_y_expand = [item*y_test_std[0] + y_test_mean[0] for item in test_y_expand]
+# # final_preds_expand = np.concatenate([final_preds[:,:,0][i].reshape(-1) for i in range(0, final_preds.shape[0], output_seq_len)], axis = 0)
+# # final_preds_expand = [item*y_test_std[0] + y_test_mean[0] for item in final_preds_expand]
+# # import matplotlib.pyplot as plt
+# # plt.clf()
+# # plt.plot(final_preds_expand, color = 'orange', label = 'predicted')
+# # plt.plot(test_y_expand, color = 'blue', label = 'actual')
+# # plt.title("test data - ")
+# # plt.legend(loc="upper left")
+
+# # plt.show()
+# # display()
 
 # COMMAND ----------
 
