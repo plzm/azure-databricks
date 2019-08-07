@@ -26,7 +26,7 @@ mountPoint = "/mnt/" + containerName
 
 # Explicit version works but hard-codes container and storage account names - have not been able to get this to work with variables and string concat
 dbutils.fs.mount(
-  source = "wasbs://hack@pzbrixsa.blob.core.windows.net",
+  source = "wasbs://hack@sa.blob.core.windows.net",
   mount_point = mountPoint,
   extra_configs = {"fs.azure.account.key.pzbrixsa.blob.core.windows.net":dbutils.secrets.get(scope = secretScopeName, key = secretName)}
 )
